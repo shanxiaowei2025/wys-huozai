@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  huozaijiankong:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        # 从 .env.production 文件中读取并传递给构建过程
+        - NODE_ENV=${NODE_ENV:-production}
+        - VITE_APP_ENV=${VITE_APP_ENV:-production}
+        - VITE_APP_TITLE=${VITE_APP_TITLE}
+        - VITE_APP_NAME=${VITE_APP_NAME}
+        - VITE_APP_VERSION=${VITE_APP_VERSION}
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+        - VITE_WS_URL=${VITE_WS_URL}
+        - VITE_ENABLE_MOCK=${VITE_ENABLE_MOCK:-false}
+        - VITE_ENABLE_DEVTOOLS=${VITE_ENABLE_DEVTOOLS:-false}
+        - VITE_LOG_LEVEL=${VITE_LOG_LEVEL:-error}
+    image: huozaijiankong-dashboard:latest
+    container_name: huozaijiankong-prod
+    ports:
+      - "3001:80"
+      # 如果需要 HTTPS，取消下面的注释
+      # - "443:443"
+    restart: always
+    # 加载生产环境变量文件
+    env_file:
+      - .env.production
+    environment:
+      - TZ=Asia/Shanghai
+      - NODE_ENV=production
+    # 资源限制
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+      # 生产环境可以运行多个副本（需要 Docker Swarm 或 Kubernetes）
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # 日志配置
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "production"
+    # 安全配置
+    security_opt:
+      - no-new-privileges:true
+    # 只读根文件系统（提高安全性）
+    # read_only: true
+    # tmpfs:
+    #   - /var/cache/nginx
+    #   - /var/run
+    networks:
+      - app-network
+    # 卷挂载（可选，用于持久化日志）
+    volumes:
+      - nginx-logs:/var/log/nginx
+      # 如果有 SSL 证书，挂载证书目录
+      # - ./ssl:/etc/nginx/ssl:ro
+
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  nginx-logs:
+    driver: local
+

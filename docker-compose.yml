@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  huozaijiankong:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # 从 .env.development 文件中读取并传递给构建过程
+        - NODE_ENV=${NODE_ENV:-development}
+        - VITE_APP_ENV=${VITE_APP_ENV:-development}
+        - VITE_APP_TITLE=${VITE_APP_TITLE}
+        - VITE_APP_NAME=${VITE_APP_NAME}
+        - VITE_APP_VERSION=${VITE_APP_VERSION}
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+        - VITE_WS_URL=${VITE_WS_URL}
+        - VITE_ENABLE_MOCK=${VITE_ENABLE_MOCK:-true}
+        - VITE_ENABLE_DEVTOOLS=${VITE_ENABLE_DEVTOOLS:-true}
+        - VITE_LOG_LEVEL=${VITE_LOG_LEVEL:-debug}
+    image: huozaijiankong-dashboard:dev
+    container_name: huozaijiankong-dashboard
+    ports:
+      - "3000:8080"
+    restart: unless-stopped
+    # 加载开发环境变量文件
+    env_file:
+      - .env.development
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
