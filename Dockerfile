@@ -1,58 +1,53 @@
-# 多阶段构建
-# 第一阶段：构建应用
-FROM node:18-alpine AS builder
+# 多阶段构建 Dockerfile
+# 第一阶段：构建阶段
+FROM node:18-alpine as builder
 
 # 设置工作目录
 WORKDIR /app
 
-# 接收构建参数（环境变量）
-ARG NODE_ENV=development
-ARG VITE_APP_ENV=development
-ARG VITE_APP_TITLE
-ARG VITE_APP_NAME
-ARG VITE_APP_VERSION
-ARG VITE_API_BASE_URL
-ARG VITE_WS_URL
-ARG VITE_ENABLE_MOCK
-ARG VITE_ENABLE_DEVTOOLS
-ARG VITE_LOG_LEVEL
-
-# 将 ARG 转换为 ENV，以便 Vite 能够读取
-ENV NODE_ENV=${NODE_ENV}
-ENV VITE_APP_ENV=${VITE_APP_ENV}
-ENV VITE_APP_TITLE=${VITE_APP_TITLE}
-ENV VITE_APP_NAME=${VITE_APP_NAME}
-ENV VITE_APP_VERSION=${VITE_APP_VERSION}
-ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
-ENV VITE_WS_URL=${VITE_WS_URL}
-ENV VITE_ENABLE_MOCK=${VITE_ENABLE_MOCK}
-ENV VITE_ENABLE_DEVTOOLS=${VITE_ENABLE_DEVTOOLS}
-ENV VITE_LOG_LEVEL=${VITE_LOG_LEVEL}
-
-# 复制 package.json 和 package-lock.json
+# 复制package文件
 COPY package*.json ./
 
 # 安装依赖
-RUN npm ci --only=production=false
+RUN npm ci --only=production --silent
 
 # 复制源代码
 COPY . .
 
 # 构建应用
-RUN npm run build:skip-check
+RUN npm run build
 
-# 第二阶段：运行应用
-FROM nginx:alpine
+# 第二阶段：生产阶段
+FROM nginx:alpine as production
 
-# 复制自定义 nginx 配置
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# 复制nginx配置
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # 从构建阶段复制构建产物
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# 暴露端口
+# 暴露80端口
 EXPOSE 80
 
-# 启动 nginx
+# 启动nginx
 CMD ["nginx", "-g", "daemon off;"]
 
+# 开发阶段（可选）
+FROM node:18-alpine as development
+
+WORKDIR /app
+
+# 复制package文件
+COPY package*.json ./
+
+# 安装所有依赖（包括开发依赖）
+RUN npm ci --silent
+
+# 复制源代码
+COPY . .
+
+# 暴露开发服务器端口
+EXPOSE 3000
+
+# 启动开发服务器
+CMD ["npm", "run", "dev"]

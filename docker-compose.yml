@@ -1,36 +1,51 @@
-version: '3.8'
-
 services:
-  huozaijiankong:
+  # 主应用服务 - 根据 NODE_ENV 环境变量动态配置
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        # 从 .env.development 文件中读取并传递给构建过程
-        - NODE_ENV=${NODE_ENV:-development}
-        - VITE_APP_ENV=${VITE_APP_ENV:-development}
-        - VITE_APP_TITLE=${VITE_APP_TITLE}
-        - VITE_APP_NAME=${VITE_APP_NAME}
-        - VITE_APP_VERSION=${VITE_APP_VERSION}
-        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
-        - VITE_WS_URL=${VITE_WS_URL}
-        - VITE_ENABLE_MOCK=${VITE_ENABLE_MOCK:-true}
-        - VITE_ENABLE_DEVTOOLS=${VITE_ENABLE_DEVTOOLS:-true}
-        - VITE_LOG_LEVEL=${VITE_LOG_LEVEL:-debug}
-    image: huozaijiankong-dashboard:dev
-    container_name: huozaijiankong-dashboard
+      target: ${NODE_ENV:-development}
+    container_name: huozaijiankong-app
     ports:
-      - "3000:8080"
-    restart: unless-stopped
-    # 加载开发环境变量文件
+      - "${APP_PORT:-3000}:${CONTAINER_PORT:-3000}"
+    volumes:
+      - .:/app
+      - /app/node_modules
     env_file:
-      - .env.development
+      - .env
     environment:
-      - TZ=Asia/Shanghai
+      - NODE_ENV=${NODE_ENV:-development}
+    stdin_open: true
+    tty: true
+    restart: ${RESTART_POLICY:-no}
     networks:
-      - app-network
+      - huozaijiankong-network
+
+  # 可选：添加后端API服务（如果需要）
+  # api:
+  #   image: your-api-image:latest
+  #   container_name: huozaijiankong-api
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - NODE_ENV=production
+  #   networks:
+  #     - huozaijiankong-network
+  #   profiles:
+  #     - prod
 
 networks:
-  app-network:
+  huozaijiankong-network:
     driver: bridge
 
+# 可选：添加数据卷（如果需要持久化数据）
+# volumes:
+#   app-data:
+
+# 使用说明：
+# 1. 在 .env 文件中设置 NODE_ENV=development 或 NODE_ENV=production
+# 2. 可选：设置其他环境变量来覆盖默认配置：
+#    - APP_PORT: 主机端口 (默认: 3000)
+#    - CONTAINER_PORT: 容器内端口 (默认: 3000)
+#    - RESTART_POLICY: 重启策略 (默认: no，生产环境建议设置为 unless-stopped)
+# 3. 运行命令：docker-compose up -d --build

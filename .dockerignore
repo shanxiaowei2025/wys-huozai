@@ -1,40 +1,64 @@
-# 依赖
+# 依赖包
 node_modules
-npm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # 构建产物
 dist
 dist-ssr
 *.local
 
-# Git
-.git
-.gitignore
+# 日志文件
+logs
+*.log
 
-# 编辑器
-.vscode
+# 运行时数据
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 覆盖率目录
+coverage
+nyc_output
+
+# IDE和编辑器文件
+.vscode/*
+!.vscode/extensions.json
 .idea
+.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-.DS_Store
 
-# 日志
-logs
-*.log
+# OS生成的文件
+Thumbs.db
 
-# 环境变量
+# 环境变量文件
+.env
 .env.local
-.env.*.local
+.env.development
+.env.production
 
-# Docker
-Dockerfile
+# Git相关
+.git
+.gitignore
+
+# Docker相关
+Dockerfile*
+docker-compose*
 .dockerignore
-docker-compose.yml
 
-# 其他
-README.md
-.editorconfig
+# 文档文件
+README*.md
+*.md
 
+# 其他不需要的文件
+.cache
+temp
+tmp
