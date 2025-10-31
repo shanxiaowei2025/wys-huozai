@@ -47,7 +47,7 @@ RUN npm ci --silent
 COPY . .
 
 # 暴露开发服务器端口
-EXPOSE 3000
+EXPOSE 3001
 
 # 启动开发服务器
 CMD ["npm", "run", "dev"]
