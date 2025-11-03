@@ -1,51 +1,26 @@
 services:
-  # 主应用服务 - 根据 NODE_ENV 环境变量动态配置
-  app:
+  huozaijiankong:
     build:
       context: .
       dockerfile: Dockerfile
-      target: ${NODE_ENV:-development}
-    container_name: huozaijiankong-app
+    container_name: huozaijiankong-dashboard
+    restart: unless-stopped
     ports:
-      - "${APP_PORT:-3001}:${CONTAINER_PORT:-3001}"
-    volumes:
-      - .:/app
-      - /app/node_modules
+      - "3001:80"
+    environment:
+      - NODE_ENV=${NODE_ENV}
     env_file:
       - .env
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-    stdin_open: true
-    tty: true
-    restart: ${RESTART_POLICY:-no}
     networks:
       - huozaijiankong-network
-
-  # 可选：添加后端API服务（如果需要）
-  # api:
-  #   image: your-api-image:latest
-  #   container_name: huozaijiankong-api
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     - NODE_ENV=production
-  #   networks:
-  #     - huozaijiankong-network
-  #   profiles:
-  #     - prod
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 networks:
   huozaijiankong-network:
     driver: bridge
-
-# 可选：添加数据卷（如果需要持久化数据）
-# volumes:
-#   app-data:
-
-# 使用说明：
-# 1. 在 .env 文件中设置 NODE_ENV=development 或 NODE_ENV=production
-# 2. 可选：设置其他环境变量来覆盖默认配置：
-#    - APP_PORT: 主机端口 (默认: 3000)
-#    - CONTAINER_PORT: 容器内端口 (默认: 3000)
-#    - RESTART_POLICY: 重启策略 (默认: no，生产环境建议设置为 unless-stopped)
-# 3. 运行命令：docker-compose up -d --build

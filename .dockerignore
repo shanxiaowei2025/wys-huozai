@@ -1,64 +1,65 @@
-# 依赖包
+# 依赖目录
 node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-# 构建产物
-dist
-dist-ssr
-*.local
-
-# 日志文件
-logs
-*.log
-
-# 运行时数据
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# 覆盖率目录
-coverage
-nyc_output
-
-# IDE和编辑器文件
-.vscode/*
-!.vscode/extensions.json
+# 编辑器目录和文件
+.vscode
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+.DS_Store
 
-# OS生成的文件
-Thumbs.db
+# 测试覆盖率
+coverage
+*.lcov
+.nyc_output
 
-# 环境变量文件
+# 本地环境变量文件
 .env
 .env.local
+.env.*.local
 .env.development
 .env.production
 
-# Git相关
+# 日志文件
+logs
+*.log
+
+# 操作系统文件
+Thumbs.db
+
+# Git 文件
 .git
 .gitignore
+.gitattributes
 
-# Docker相关
-Dockerfile*
-docker-compose*
-.dockerignore
+# CI/CD 文件
+.github
+.gitlab-ci.yml
+.travis.yml
 
-# 文档文件
-README*.md
+# 文档
+README.md
+CHANGELOG.md
+LICENSE
+
+# 其他
+.editorconfig
+.prettierrc
+.eslintrc*
+.eslintignore
 *.md
 
-# 其他不需要的文件
-.cache
-temp
-tmp
+# Docker 相关
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 部署脚本
+deploy.sh
